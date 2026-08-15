@@ -2,6 +2,9 @@ import time
 
 import requests
 from decouple import config
+from decimal import Decimal
+from contas.models import ContaBancaria
+
 
 PLUGGY_BASE_URL = "https://api.pluggy.ai"
 
@@ -56,21 +59,6 @@ def criar_item_teste(api_key: str, connector_id: int) -> str:
     resposta.raise_for_status()
     return resposta.json()["id"]
 
-def criar_item_teste(api_key: str, connector_id: int) -> str:
-    """Cria uma conexao de teste (fake bank), retorna o item_id."""
-    resposta = requests.post(
-        f"{PLUGGY_BASE_URL}/items",
-        headers={"X-API-KEY": api_key},
-        json={
-            "connectorId": connector_id,
-            "parameters": {
-                "user": "user-ok",
-                "password": "password-ok",
-            },
-        },
-    )
-    resposta.raise_for_status()
-    return resposta.json()["id"]
 
 def obter_status_item(api_key: str, item_id: str) -> dict:
     """Retorna o status atual do item (UPDATING, UPDATED, LOGIN_ERROR, etc)."""
@@ -97,3 +85,27 @@ def aguardar_item_pronto(api_key: str, item_id: str, tentativas: int = 15, inter
         time.sleep(intervalo)
 
     raise TimeoutError("Item nao ficou pronto a tempo")
+
+
+def salvar_contas(perfil, item_id: str, contas_pluggy: list) -> int:
+    """
+    Transform + Load: recebe o retorno bruto da Pluggy, mapeia pro model
+    ContaBancaria e grava no banco. Idempotente: usa update_or_create,
+    entao rodar de novo nao duplica.
+    """
+    salvos = 0
+    for conta in contas_pluggy:
+        if conta["type"] != "BANK":
+            continue  # por enquanto, ignora cartao de credito (saldo negativo)
+
+        ContaBancaria.objects.update_or_create(
+            pluggy_account_id=conta["id"],
+            defaults={
+                "perfil": perfil,
+                "banco": "nubank",  # por enquanto fixo; no banco real, viria do connector
+                "saldo_atual": Decimal(str(conta["balance"])),
+            },
+        )
+        salvos += 1
+
+    return salvos
