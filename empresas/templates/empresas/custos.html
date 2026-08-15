@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Custos da empresa — FinFlow{% endblock %}
+
+{% block extra_css %}
+<style>
+    .painel { max-width: 700px; margin: 0 auto; padding: 3rem 1.5rem; }
+    .painel h1 { font-family: var(--fonte-titulo); font-size: 1.6rem; margin-bottom: 1.5rem; }
+    table { width: 100%; border-collapse: collapse; background: var(--cor-papel); border-radius: 8px; overflow: hidden; }
+    th, td { padding: 0.75rem 1rem; text-align: left; color: var(--cor-texto-escuro); }
+    th { font-size: 0.8rem; color: #667; border-bottom: 1px solid #ddd; }
+    td.valor { font-family: var(--fonte-numero); font-variant-numeric: tabular-nums; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="painel">
+    <h1>Custos da empresa</h1>
+    <table>
+        <tr><th>Descrição</th><th>Vencimento</th><th>Status</th><th>Valor</th></tr>
+        {% for custo in custos %}
+        <tr>
+            <td>{{ custo.descricao }}</td>
+            <td>{{ custo.vencimento|date:"d/m/Y" }}</td>
+            <td>{{ custo.get_status_display }}</td>
+            <td class="valor">R$ {{ custo.valor|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}
