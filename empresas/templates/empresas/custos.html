@@ -4,25 +4,53 @@
 
 {% block extra_css %}
 <style>
-    .painel { max-width: 700px; margin: 0 auto; padding: 3rem 1.5rem; }
-    .painel h1 { font-family: var(--fonte-titulo); font-size: 1.6rem; margin-bottom: 1.5rem; }
-    table { width: 100%; border-collapse: collapse; background: var(--cor-papel); border-radius: 8px; overflow: hidden; }
+    .painel { max-width: 750px; margin: 0 auto; padding: 3rem 1.5rem; }
+    .painel-topo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .painel h1 { font-family: var(--fonte-titulo); font-size: 1.6rem; }
+    .botao-marca {
+        background: var(--cor-marca); color: var(--cor-texto-claro);
+        padding: 0.6rem 1.2rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem;
+    }
+    .botao-marca:hover { background: var(--cor-marca-hover); }
+
+    table { width: 100%; border-collapse: collapse; background: var(--cor-papel); border-radius: 8px; }
+    table tr:first-child th:first-child { border-top-left-radius: 8px; }
+    table tr:first-child th:last-child { border-top-right-radius: 8px; }
+    table tr:last-child td:first-child { border-bottom-left-radius: 8px; }
+    table tr:last-child td:last-child { border-bottom-right-radius: 8px; }
+
     th, td { padding: 0.75rem 1rem; text-align: left; color: var(--cor-texto-escuro); }
     th { font-size: 0.8rem; color: #667; border-bottom: 1px solid #ddd; }
     td.valor { font-family: var(--fonte-numero); font-variant-numeric: tabular-nums; }
+
+    .semaforo-linha {
+        display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem;
+    }
+    .bolinha { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .bolinha.verde { background: #2E9E5B; }
+    .bolinha.amarelo { background: #D9A82E; }
+    .bolinha.vermelho { background: #C63B3B; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="painel">
-    <h1>Custos da empresa</h1>
+    <div class="painel-topo">
+        <h1>Custos da empresa</h1>
+        <a class="botao-marca" href="{% url 'empresas:adicionar_custo' %}">+ Adicionar custo</a>
+    </div>
     <table>
         <tr><th>Descrição</th><th>Vencimento</th><th>Status</th><th>Valor</th></tr>
         {% for custo in custos %}
         <tr>
             <td>{{ custo.descricao }}</td>
             <td>{{ custo.vencimento|date:"d/m/Y" }}</td>
-            <td>{{ custo.get_status_display }}</td>
+            <td>
+                <span class="semaforo-linha">
+                    <span class="bolinha {{ custo.cor_vencimento }}"></span>
+                    {{ custo.dias_para_vencer }} dias
+                </span>
+            </td>
             <td class="valor">R$ {{ custo.valor|floatformat:2 }}</td>
         </tr>
         {% endfor %}

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import date
 
 
 class PerfilEmpresa(models.Model):
@@ -66,6 +67,21 @@ class CustoEmpresa(models.Model):
     valor = models.DecimalField(max_digits=12, decimal_places=2)
     vencimento = models.DateField()
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pendente")
-
+    
     class Meta:
         ordering = ["vencimento"]
+
+    def dias_para_vencer(self):
+        return (self.vencimento - date.today()).days
+
+    def cor_vencimento(self):
+        dias = self.dias_para_vencer()
+        if dias > 20:
+            return "verde"
+        elif dias >= 10:
+            return "amarelo"
+        else:
+            return "vermelho"
+
+    def __str__(self):
+        return self.descricao
