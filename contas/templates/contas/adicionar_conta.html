@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Adicionar conta — FinFlow{% endblock %}
+
+{% block extra_css %}
+<style>
+    .painel { max-width: 500px; margin: 0 auto; padding: 3rem 1.5rem; }
+    .painel h1 { font-family: var(--fonte-titulo); font-size: 1.6rem; margin-bottom: 1.5rem; }
+    form { display: flex; flex-direction: column; gap: 1rem; }
+    label { font-size: 0.85rem; color: var(--cor-texto-suave); margin-bottom: 0.3rem; display: block; }
+    input, select, textarea {
+        width: 100%; padding: 0.6rem; border-radius: 6px; border: none;
+        background: var(--cor-papel); color: var(--cor-texto-escuro); font-family: var(--fonte-corpo);
+    }
+    button {
+        background: var(--cor-marca); color: var(--cor-texto-claro); border: none;
+        padding: 0.7rem; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 0.5rem;
+    }
+    button:hover { background: var(--cor-marca-hover); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="painel">
+    <h1>Adicionar conta a pagar</h1>
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div>
+                <label>{{ field.label }}</label>
+                {{ field }}
+            </div>
+        {% endfor %}
+        <button type="submit">Salvar</button>
+    </form>
+</div>
+{% endblock %}

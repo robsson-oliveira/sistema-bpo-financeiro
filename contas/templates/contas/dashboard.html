@@ -50,8 +50,9 @@
             <div class="valor">R$ {{ saldo_contas|floatformat:2 }}</div>
         </div>
         <div class="cartao-saldo">
-            <div class="rotulo">A receber</div>
-            <div class="valor">R$ {{ total_a_receber|floatformat:2 }}</div>
+            <div class="rotulo">Contas a pagar</div>
+            <div class="valor">R$ {{ total_contas_pagar|floatformat:2 }}</div>
+            <a class="detalhes" href="{% url 'contas:contas_a_pagar' %}">Ver detalhes →</a>
         </div>
         <div class="cartao-saldo">
             <div class="rotulo">Poupança do mês</div>
