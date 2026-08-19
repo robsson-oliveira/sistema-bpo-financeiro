@@ -39,23 +39,6 @@ def contas_pagas(request):
 
 
 @login_required
-def marcar_conta_paga(request, pk):
-    if request.method == "POST":
-        conta = get_object_or_404(ContaPagar, pk=pk, perfil__usuario=request.user)
-        conta.status = "paga"
-        conta.save()
-    return redirect("contas:contas_a_pagar")
-
-
-@login_required
-def excluir_conta(request, pk):
-    if request.method == "POST":
-        conta = get_object_or_404(ContaPagar, pk=pk, perfil__usuario=request.user)
-        conta.delete()
-    return redirect("contas:contas_a_pagar")
-
-
-@login_required
 def reordenar_contas(request):
     if request.method == "POST":
         dados = json.loads(request.body)
@@ -76,3 +59,19 @@ def dashboard(request):
         "poupanca_mes": perfil.poupanca_do_mes(hoje),
     }
     return render(request, "contas/dashboard.html", contexto)
+
+
+@login_required
+def marcar_contas_pagas_bulk(request):
+    if request.method == "POST":
+        ids = request.POST.getlist("selecionados")
+        ContaPagar.objects.filter(pk__in=ids, perfil__usuario=request.user).update(status="paga")
+    return redirect("contas:contas_a_pagar")
+
+
+@login_required
+def excluir_contas_bulk(request):
+    if request.method == "POST":
+        ids = request.POST.getlist("selecionados")
+        ContaPagar.objects.filter(pk__in=ids, perfil__usuario=request.user).delete()
+    return redirect("contas:contas_a_pagar")
