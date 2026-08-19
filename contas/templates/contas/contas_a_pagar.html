@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Contas a pagar — FinFlow{% endblock %}
+
+{% block extra_css %}
+<style>
+    .painel { max-width: 850px; margin: 0 auto; padding: 3rem 1.5rem; }
+    .painel-topo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .painel h1 { font-family: var(--fonte-titulo); font-size: 1.6rem; }
+    .botoes-topo { display: flex; gap: 0.75rem; }
+    .botao-marca, .botao-secundario {
+        padding: 0.6rem 1.2rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem;
+    }
+    .botao-marca { background: var(--cor-marca); color: var(--cor-texto-claro); }
+    .botao-marca:hover { background: var(--cor-marca-hover); }
+    .botao-secundario { background: var(--cor-papel); color: var(--cor-texto-escuro); }
+
+    table { width: 100%; border-collapse: collapse; background: var(--cor-papel); border-radius: 8px; }
+    table tr:first-child th:first-child { border-top-left-radius: 8px; }
+    table tr:first-child th:last-child { border-top-right-radius: 8px; }
+    table tr:last-child td:first-child { border-bottom-left-radius: 8px; }
+    table tr:last-child td:last-child { border-bottom-right-radius: 8px; }
+
+    th, td { padding: 0.75rem 1rem; text-align: left; color: var(--cor-texto-escuro); }
+    th { font-size: 0.8rem; color: #667; border-bottom: 1px solid #ddd; }
+    td.valor { font-family: var(--fonte-numero); font-variant-numeric: tabular-nums; }
+
+    tr.linha-conta { cursor: grab; }
+    tr.arrastando { opacity: 0.4; }
+    .alca-arrastar { color: #99a; user-select: none; font-size: 1.1rem; }
+
+    .menu-acoes { position: relative; text-align: right; }
+    .menu-opcoes {
+        display: none; position: absolute; right: 0; top: 1.6rem;
+        background: white; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        z-index: 100; overflow: visible; min-width: 150px;
+    }
+    .menu-opcoes.aberto { display: block; }
+    .menu-opcoes button {
+        display: block; width: 100%; text-align: left; padding: 0.6rem 1rem;
+        border: none; background: none; cursor: pointer; font-size: 0.85rem; color: var(--cor-texto-escuro);
+    }
+    .menu-opcoes button:hover { background: #f0ece2; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="painel">
+    <div class="painel-topo">
+        <h1>Contas a pagar</h1>
+        <div class="botoes-topo">
+            <a class="botao-secundario" href="{% url 'contas:contas_pagas' %}">Contas Pagas</a>
+            <a class="botao-marca" href="{% url 'contas:adicionar_conta_a_pagar' %}">+ Adicionar conta</a>
+        </div>
+    </div>
+
+    <table id="tabela-contas">
+        <tr><th></th><th>Nome</th><th>Tipo</th><th>Valor</th><th>Detalhes</th><th></th></tr>
+        {% for conta in lista %}
+        <tr class="linha-conta" draggable="true" data-id="{{ conta.id }}">
+            <td><span class="alca-arrastar">⠿</span></td>
+            <td>{{ conta.nome }}</td>
+            <td>{{ conta.get_tipo_conta_display }}</td>
+            <td class="valor">R$ {{ conta.valor|floatformat:2 }}</td>
+            <td>{{ conta.detalhes|default:"—" }}</td>
+            <td class="menu-acoes">
+                <input type="checkbox" onclick="this.nextElementSibling.classList.toggle('aberto', this.checked)">
+                <div class="menu-opcoes">
+                    <form method="post" action="{% url 'contas:marcar_conta_paga' conta.id %}" onsubmit="return confirm('Confirmar pagamento?');">
+                        {% csrf_token %}
+                        <button type="submit">Conta Paga</button>
+                    </form>
+                    <form method="post" action="{% url 'contas:excluir_conta' conta.id %}" onsubmit="return confirm('Confirmar exclusão de conta?');">
+                        {% csrf_token %}
+                        <button type="submit">Excluir Conta</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<script>
+let linhaArrastada = null;
+
+document.querySelectorAll('.linha-conta').forEach(linha => {
+    linha.addEventListener('dragstart', () => {
+        linhaArrastada = linha;
+        linha.classList.add('arrastando');
+    });
+    linha.addEventListener('dragend', () => {
+        linha.classList.remove('arrastando');
+        salvarNovaOrdem();
+    });
+    linha.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const tabela = document.getElementById('tabela-contas');
+        const depois = [...tabela.querySelectorAll('.linha-conta:not(.arrastando)')].find(outra => {
+            const rect = outra.getBoundingClientRect();
+            return e.clientY < rect.top + rect.height / 2;
+        });
+        depois ? tabela.insertBefore(linhaArrastada, depois) : tabela.appendChild(linhaArrastada);
+    });
+});
+
+function salvarNovaOrdem() {
+    const ids = [...document.querySelectorAll('.linha-conta')].map(linha => linha.dataset.id);
+    fetch("{% url 'contas:reordenar_contas' %}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+        body: JSON.stringify({ ordem: ids }),
+    });
+}
+</script>
+{% endblock %}
