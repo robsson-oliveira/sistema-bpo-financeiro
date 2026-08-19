@@ -10,10 +10,7 @@ class PerfilPessoal(models.Model):
 
     def saldo_total_contas(self):
         return self.contas.aggregate(total=models.Sum("saldo_atual"))["total"] or 0
-
-    def total_a_receber(self):
-        return self.entradas.filter(recebido=False).aggregate(total=models.Sum("valor"))["total"] or 0
-
+    
     def poupanca_do_mes(self, mes_referencia):
         poupanca = self.poupancas.filter(mes_referencia=mes_referencia).first()
         return poupanca.valor_guardado if poupanca else 0
@@ -21,6 +18,8 @@ class PerfilPessoal(models.Model):
     def __str__(self):
         return self.usuario.get_full_name() or self.usuario.username
 
+    def total_contas_a_pagar(self):
+        return self.contas_pagar.filter(status="pendente").aggregate(total=models.Sum("valor"))["total"] or 0
 
 class ContaBancaria(models.Model):
     BANCO_CHOICES = [
@@ -54,3 +53,31 @@ class Poupanca(models.Model):
     class Meta:
         unique_together = ("perfil", "mes_referencia")
 
+
+class ContaPagar(models.Model):
+    STATUS_CHOICES = [
+        ("pendente", "Pendente"),
+        ("paga", "Paga"),
+    ]
+    TIPO_CHOICES = [
+        ("moradia", "Moradia"),
+        ("alimentacao", "Alimentação"),
+        ("transporte", "Transporte"),
+        ("saude", "Saúde"),
+        ("educacao", "Educação"),
+        ("lazer", "Lazer e Estilo de Vida"),
+        ("dividas", "Dívidas e Obrigações"),
+    ]
+    perfil = models.ForeignKey(PerfilPessoal, on_delete=models.CASCADE, related_name="contas_pagar")
+    nome = models.CharField(max_length=100)
+    prioridade = models.IntegerField(default=0)
+    valor = models.DecimalField(max_digits=12, decimal_places=2)
+    tipo_conta = models.CharField(max_length=20, choices=TIPO_CHOICES)
+    detalhes = models.CharField(max_length=200, blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pendente")
+
+    class Meta:
+        ordering = ["prioridade"]
+
+    def __str__(self):
+        return self.nome

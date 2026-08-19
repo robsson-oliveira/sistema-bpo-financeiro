@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Meu painel — FinFlow{% endblock %}
+
+{% block extra_css %}
+<style>
+    .painel {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem;
+    }
+    .painel h1 {
+        font-family: var(--fonte-titulo);
+        font-size: 1.8rem;
+        margin-bottom: 2rem;
+    }
+    .saldos {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.25rem;
+    }
+    .cartao-saldo {
+        background: var(--cor-papel);
+        color: var(--cor-texto-escuro);
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+    .cartao-saldo .rotulo {
+        font-size: 0.85rem;
+        color: #667;
+        margin-bottom: 0.5rem;
+    }
+    .cartao-saldo .valor {
+        font-family: var(--fonte-numero);
+        font-variant-numeric: tabular-nums;
+        font-size: 1.6rem;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="painel">
+    <h1>Olá, {{ request.user.first_name|default:request.user.username }}</h1>
+
+    <div class="saldos">
+        <div class="cartao-saldo">
+            <div class="rotulo">Saldo em contas</div>
+            <div class="valor">R$ {{ saldo_contas|floatformat:2 }}</div>
+        </div>
+        <div class="cartao-saldo">
+            <div class="rotulo">Contas a pagar</div>
+            <div class="valor">R$ {{ total_contas_pagar|floatformat:2 }}</div>
+            <a class="detalhes" href="{% url 'contas:contas_a_pagar' %}">Ver detalhes →</a>
+        </div>
+        <div class="cartao-saldo">
+            <div class="rotulo">Poupança do mês</div>
+            <div class="valor">R$ {{ poupanca_mes|floatformat:2 }}</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

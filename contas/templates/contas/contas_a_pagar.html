@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Contas a pagar — FinFlow{% endblock %}
+
+{% block extra_css %}
+<style>
+    .painel { max-width: 850px; margin: 0 auto; padding: 3rem 1.5rem; }
+    .painel-topo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .painel h1 { font-family: var(--fonte-titulo); font-size: 1.6rem; }
+    .botoes-topo { display: flex; gap: 0.75rem; }
+    .botao-marca, .botao-secundario, .botao-perigo {
+        padding: 0.6rem 1.2rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem;
+        border: none; cursor: pointer;
+    }
+    .botao-marca { background: var(--cor-marca); color: var(--cor-texto-claro); }
+    .botao-marca:hover { background: var(--cor-marca-hover); }
+    .botao-secundario { background: var(--cor-papel); color: var(--cor-texto-escuro); }
+    .botao-perigo { background: #C63B3B; color: white; }
+
+    .barra-selecao {
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--cor-papel);
+        color: var(--cor-texto-escuro);
+        padding: 0.75rem 1.25rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+    .barra-selecao.ativa { display: flex; }
+    .barra-selecao .contagem { font-size: 0.9rem; font-weight: 600; }
+    .barra-selecao .acoes { display: flex; gap: 0.6rem; }
+
+    table { width: 100%; border-collapse: collapse; background: var(--cor-papel); border-radius: 8px; }
+    table tr:first-child th:first-child { border-top-left-radius: 8px; }
+    table tr:first-child th:last-child { border-top-right-radius: 8px; }
+    table tr:last-child td:first-child { border-bottom-left-radius: 8px; }
+    table tr:last-child td:last-child { border-bottom-right-radius: 8px; }
+
+    th, td { padding: 0.75rem 1rem; text-align: left; color: var(--cor-texto-escuro); }
+    th { font-size: 0.8rem; color: #667; border-bottom: 1px solid #ddd; }
+    td.valor { font-family: var(--fonte-numero); font-variant-numeric: tabular-nums; }
+
+    tr.linha-conta { cursor: grab; }
+    tr.arrastando { opacity: 0.4; }
+    .alca-arrastar { color: #99a; user-select: none; font-size: 1.1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="painel">
+    <div class="painel-topo">
+        <h1>Contas a pagar</h1>
+        <div class="botoes-topo">
+            <a class="botao-secundario" href="{% url 'contas:contas_pagas' %}">Contas Pagas</a>
+            <a class="botao-marca" href="{% url 'contas:adicionar_conta_a_pagar' %}">+ Adicionar conta</a>
+        </div>
+    </div>
+
+    <form method="post" id="form-contas">
+        {% csrf_token %}
+
+        <div class="barra-selecao" id="barra-selecao">
+            <span class="contagem" id="contagem-selecionados">0 selecionadas</span>
+            <div class="acoes">
+                <button type="submit" formaction="{% url 'contas:marcar_contas_pagas_bulk' %}"
+                        class="botao-marca" onclick="return confirm('Confirmar pagamento das contas selecionadas?');">
+                    Marcar como pagas
+                </button>
+                <button type="submit" formaction="{% url 'contas:excluir_contas_bulk' %}"
+                        class="botao-perigo" onclick="return confirm('Confirmar exclusão das contas selecionadas?');">
+                    Excluir selecionadas
+                </button>
+            </div>
+        </div>
+
+        <table id="tabela-contas">
+            <tr><th></th><th></th><th>Nome</th><th>Tipo</th><th>Valor</th><th>Detalhes</th></tr>
+            {% for conta in lista %}
+            <tr class="linha-conta" draggable="true" data-id="{{ conta.id }}">
+                <td><span class="alca-arrastar">⠿</span></td>
+                <td><input type="checkbox" name="selecionados" value="{{ conta.id }}" class="chk-conta"></td>
+                <td>{{ conta.nome }}</td>
+                <td>{{ conta.get_tipo_conta_display }}</td>
+                <td class="valor">R$ {{ conta.valor|floatformat:2 }}</td>
+                <td>{{ conta.detalhes|default:"—" }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </form>
+</div>
+
+<script>
+let linhaArrastada = null;
+
+document.querySelectorAll('.linha-conta').forEach(linha => {
+    linha.addEventListener('dragstart', (e) => {
+        if (e.target.tagName === 'INPUT') { e.preventDefault(); return; }
+        linhaArrastada = linha;
+        linha.classList.add('arrastando');
+    });
+    linha.addEventListener('dragend', () => {
+        linha.classList.remove('arrastando');
+        salvarNovaOrdem();
+    });
+    linha.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const tabela = document.getElementById('tabela-contas');
+        const depois = [...tabela.querySelectorAll('.linha-conta:not(.arrastando)')].find(outra => {
+            const rect = outra.getBoundingClientRect();
+            return e.clientY < rect.top + rect.height / 2;
+        });
+        depois ? tabela.insertBefore(linhaArrastada, depois) : tabela.appendChild(linhaArrastada);
+    });
+});
+
+function salvarNovaOrdem() {
+    const ids = [...document.querySelectorAll('.linha-conta')].map(linha => linha.dataset.id);
+    fetch("{% url 'contas:reordenar_contas' %}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+        body: JSON.stringify({ ordem: ids }),
+    });
+}
+
+const checkboxes = document.querySelectorAll('.chk-conta');
+const barra = document.getElementById('barra-selecao');
+const contagem = document.getElementById('contagem-selecionados');
+
+function atualizarBarra() {
+    const marcados = document.querySelectorAll('.chk-conta:checked').length;
+    barra.classList.toggle('ativa', marcados > 0);
+    contagem.textContent = marcados + (marcados === 1 ? ' selecionada' : ' selecionadas');
+}
+
+checkboxes.forEach(chk => chk.addEventListener('change', atualizarBarra));
+</script>
+{% endblock %}

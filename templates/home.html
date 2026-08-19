@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}FinFlow — Escolha seu perfil{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tela-escolha {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        text-align: center;
+    }
+    .tela-escolha h1 {
+        font-family: var(--fonte-titulo);
+        font-size: clamp(2rem, 5vw, 3rem);
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    .tela-escolha p {
+        color: var(--cor-texto-suave);
+        margin-bottom: 3rem;
+    }
+    .cartoes {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .cartao {
+        background: var(--cor-papel);
+        color: var(--cor-texto-escuro);
+        border-radius: 12px;
+        padding: 2.5rem 2rem;
+        width: 260px;
+        text-decoration: none;
+        transition: transform 0.15s ease;
+    }
+    .cartao:hover {
+        transform: translateY(-4px);
+    }
+    .cartao h2 {
+        font-family: var(--fonte-titulo);
+        font-size: 1.4rem;
+        margin-bottom: 0.5rem;
+    }
+    .cartao p {
+        color: #556;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tela-escolha">
+    <h1>Como você quer organizar suas finanças?</h1>
+    <p>Escolha o perfil que combina com você</p>
+
+    <div class="cartoes">
+        <a href="{% url 'contas:dashboard' %}" class="cartao">
+            <h2>Pessoa Física</h2>
+            <p>Controle pessoal de contas, entradas e poupança — CPF</p>
+        </a>
+        <a href="{% url 'empresas:dashboard' %}" class="cartao">
+            <h2>Empresa</h2>
+            <p>Gestão financeira do seu negócio — CNPJ</p>
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+:root {
+    --cor-fundo: #101B2D;
+    --cor-papel: #F6F3EC;
+    --cor-marca: #1F6F5C;
+    --cor-marca-hover: #185a4a;
+    --cor-texto-claro: #F6F3EC;
+    --cor-texto-escuro: #101B2D;
+    --cor-texto-suave: #8B95A6;
+
+    --fonte-titulo: 'Fraunces', serif;
+    --fonte-corpo: 'Inter', sans-serif;
+    --fonte-numero: 'IBM Plex Mono', monospace;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--fonte-corpo);
+    background-color: var(--cor-fundo);
+    color: var(--cor-texto-claro);
+    min-height: 100vh;
+}
+
+.valor-monetario {
+    font-family: var(--fonte-numero);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+}
+
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--cor-marca);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
