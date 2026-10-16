@@ -1,6 +1,6 @@
+from datetime import date
 from django.db import models
 from django.contrib.auth.models import User
-
 
 class PerfilEmpresa(models.Model):
     usuario = models.OneToOneField(User, on_delete=models.CASCADE, related_name="perfil_empresa")
@@ -69,3 +69,15 @@ class CustoEmpresa(models.Model):
 
     class Meta:
         ordering = ["vencimento"]
+
+    def dias_para_vencer(self):
+        return (self.vencimento - date.today()).days
+
+    def cor_vencimento(self):
+        dias = self.dias_para_vencer()
+        if dias > 20:
+            return "verde"
+        elif dias >= 10:
+            return "amarelo"
+        else:
+            return "vermelho"

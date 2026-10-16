@@ -37,6 +37,43 @@ button:focus-visible {
     outline-offset: 2px;
 }
 
+/* Cabeçalho */
+.cabecalho {
+    display: flex;
+    justify-content: center;
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid rgba(246, 243, 236, 0.08);
+}
+
+.cabecalho .marca {
+    font-family: var(--fonte-titulo);
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--cor-texto-claro);
+    text-decoration: none;
+}
+
+.cabecalho .marca:hover {
+    opacity: 0.85;
+}
+
+/* Mensagens do sistema */
+.mensagens {
+    list-style: none;
+    max-width: 850px;
+    margin: 1rem auto 0;
+    padding: 0 1.5rem;
+}
+
+.mensagem {
+    background: var(--cor-papel);
+    color: var(--cor-texto-escuro);
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
     * {
         transition: none !important;

@@ -1,21 +1,40 @@
 import json
 from datetime import date
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import PerfilPessoal, ContaPagar
 from .forms import ContaPagarForm
+from .models import PerfilPessoal, ContaPagar
+
+
+def obter_perfil(usuario):
+    perfil, _ = PerfilPessoal.objects.get_or_create(usuario=usuario, defaults={"cpf": ""})
+    return perfil
+
+
+@login_required
+def dashboard(request):
+    perfil = obter_perfil(request.user)
+    mes_atual = date.today().replace(day=1)
+
+    contexto = {
+        "saldo_contas": perfil.saldo_total_contas(),
+        "total_contas_pagar": perfil.total_contas_a_pagar(),
+        "poupanca_mes": perfil.poupanca_do_mes(mes_atual),
+    }
+    return render(request, "contas/dashboard.html", contexto)
+
 
 @login_required
 def contas_a_pagar(request):
-    perfil, _ = PerfilPessoal.objects.get_or_create(usuario=request.user, defaults={"cpf": ""})
+    perfil = obter_perfil(request.user)
     lista = perfil.contas_pagar.filter(status="pendente")
     return render(request, "contas/contas_a_pagar.html", {"lista": lista})
 
 
 @login_required
 def adicionar_conta_a_pagar(request):
-    perfil, _ = PerfilPessoal.objects.get_or_create(usuario=request.user, defaults={"cpf": ""})
+    perfil = obter_perfil(request.user)
 
     if request.method == "POST":
         form = ContaPagarForm(request.POST)
@@ -33,25 +52,24 @@ def adicionar_conta_a_pagar(request):
 
 @login_required
 def contas_pagas(request):
-    perfil, _ = PerfilPessoal.objects.get_or_create(usuario=request.user, defaults={"cpf": ""})
+    perfil = obter_perfil(request.user)
     lista = perfil.contas_pagar.filter(status="paga")
     return render(request, "contas/contas_pagas.html", {"lista": lista})
 
 
 @login_required
-def marcar_conta_paga(request, pk):
+def marcar_contas_pagas_bulk(request):
     if request.method == "POST":
-        conta = get_object_or_404(ContaPagar, pk=pk, perfil__usuario=request.user)
-        conta.status = "paga"
-        conta.save()
+        ids = request.POST.getlist("selecionados")
+        ContaPagar.objects.filter(pk__in=ids, perfil__usuario=request.user).update(status="paga")
     return redirect("contas:contas_a_pagar")
 
 
 @login_required
-def excluir_conta(request, pk):
+def excluir_contas_bulk(request):
     if request.method == "POST":
-        conta = get_object_or_404(ContaPagar, pk=pk, perfil__usuario=request.user)
-        conta.delete()
+        ids = request.POST.getlist("selecionados")
+        ContaPagar.objects.filter(pk__in=ids, perfil__usuario=request.user).delete()
     return redirect("contas:contas_a_pagar")
 
 
@@ -63,16 +81,3 @@ def reordenar_contas(request):
             ContaPagar.objects.filter(pk=conta_id, perfil__usuario=request.user).update(prioridade=indice)
         return JsonResponse({"ok": True})
     return JsonResponse({"ok": False}, status=400)
-
-
-@login_required
-def dashboard(request):
-    perfil, _ = PerfilPessoal.objects.get_or_create(usuario=request.user, defaults={"cpf": ""})
-    hoje = date.today().replace(day=1)
-
-    contexto = {
-        "saldo_contas": perfil.saldo_total_contas(),
-        "total_contas_pagar": perfil.total_contas_a_pagar(),
-        "poupanca_mes": perfil.poupanca_do_mes(hoje),
-    }
-    return render(request, "contas/dashboard.html", contexto)

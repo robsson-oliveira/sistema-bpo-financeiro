@@ -1,0 +1,117 @@
+.auth-pagina {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3rem 1.5rem;
+}
+
+.auth-pagina .mensagens {
+    width: 100%;
+    max-width: 420px;
+    padding: 0;
+    margin: 0 0 1rem;
+}
+
+.auth-cartao {
+    width: 100%;
+    max-width: 420px;
+    background: var(--cor-papel);
+    color: var(--cor-texto-escuro);
+    border-radius: 12px;
+    padding: 2rem;
+}
+
+.auth-cartao h1 {
+    font-family: var(--fonte-titulo);
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+}
+
+.auth-cartao h2 {
+    font-family: var(--fonte-titulo);
+    font-size: 1.1rem;
+    margin: 1.5rem 0 0.75rem;
+}
+
+.auth-cartao p {
+    font-size: 0.9rem;
+    color: #556;
+    margin-bottom: 1rem;
+}
+
+.auth-cartao a {
+    color: var(--cor-marca);
+    font-weight: 600;
+}
+
+.auth-cartao label {
+    display: block;
+    font-size: 0.85rem;
+    color: #667;
+    margin-bottom: 0.3rem;
+}
+
+.auth-cartao input[type="text"],
+.auth-cartao input[type="email"],
+.auth-cartao input[type="password"] {
+    width: 100%;
+    padding: 0.6rem;
+    border-radius: 6px;
+    border: 1px solid #d8d3c6;
+    background: #fff;
+    font-family: var(--fonte-corpo);
+    margin-bottom: 0.25rem;
+}
+
+.auth-cartao input[type="checkbox"] {
+    width: auto;
+}
+
+.auth-cartao button,
+.auth-cartao input[type="submit"] {
+    width: 100%;
+    background: var(--cor-marca);
+    color: var(--cor-texto-claro);
+    border: none;
+    padding: 0.7rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+
+.auth-cartao button:hover {
+    background: var(--cor-marca-hover);
+}
+
+.auth-cartao hr {
+    border: none;
+    border-top: 1px solid #ddd8cc;
+    margin: 1.5rem 0;
+}
+
+.auth-cartao ul {
+    list-style: none;
+    padding: 0;
+}
+
+.auth-cartao ul li a {
+    display: block;
+    text-align: center;
+    padding: 0.7rem;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #d8d3c6;
+    color: var(--cor-texto-escuro);
+    text-decoration: none;
+}
+
+.auth-cartao ul li a:hover {
+    background: #f0ece2;
+}
+
+.auth-cartao .errorlist {
+    color: #C63B3B;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
